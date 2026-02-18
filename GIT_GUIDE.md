@@ -206,18 +206,38 @@ git commit -m "解决合并冲突"
 ## 5. 远程仓库 (GitHub)
 
 ### 5.1 连接远程仓库
+
+**HTTPS 方式（推荐新手）**：
 ```bash
 # 添加远程仓库
 git remote add origin https://github.com/用户名/仓库名.git
 
-# 使用 SSH（推荐）
-git remote add origin git@github.com:用户名/仓库名.git
+# 推送时会弹出登录窗口，输入 GitHub 用户名和密码
+# 注意：密码需要使用 Personal Access Token，不是登录密码
+```
 
+**SSH 方式（推荐熟练后使用）**：
+```bash
+# 需要先配置 SSH 密钥（见第2节）
+git remote add origin git@github.com:用户名/仓库名.git
+```
+
+**常用操作**：
+```bash
 # 查看远程仓库
 git remote -v
 
 # 修改远程仓库地址
 git remote set-url origin 新地址
+
+# 删除远程仓库连接
+git remote remove origin
+
+# 切换从 SSH 到 HTTPS
+git remote set-url origin https://github.com/用户名/仓库名.git
+
+# 切换从 HTTPS 到 SSH
+git remote set-url origin git@github.com:用户名/仓库名.git
 ```
 
 ### 5.2 推送和拉取
@@ -238,7 +258,33 @@ git pull origin main
 git fetch origin
 ```
 
-### 5.3 GitHub 工作流程
+### 5.3 GitHub Personal Access Token（重要）
+
+2021年后，GitHub 不再支持密码认证，HTTPS 推送需要使用 **Personal Access Token**：
+
+**创建 Token**：
+1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. 点击 "Generate new token"
+3. 勾选 `repo` 权限
+4. 生成并**保存** Token（只显示一次！）
+
+**使用 Token**：
+```bash
+# 推送时，用户名填你的 GitHub 用户名
+# 密码填 Personal Access Token
+git push -u origin main
+```
+
+**保存凭据（避免每次输入）**：
+```bash
+# Windows（使用 Git Credential Manager，通常自动配置）
+git config --global credential.helper manager
+
+# 或缓存15分钟
+git config --global credential.helper cache
+```
+
+### 5.4 GitHub 工作流程
 ```bash
 # 1. Fork 项目（在 GitHub 网页上操作）
 
@@ -360,7 +406,7 @@ git branch -d feature-新功能名
 
 ### 第一次提交本项目
 ```bash
-# 1. 配置用户信息（如果还没配置）
+# 1. 配置用户信息（必须，首次使用）
 git config --global user.name "你的名字"
 git config --global user.email "你的邮箱"
 
@@ -373,8 +419,17 @@ git status
 # 4. 提交
 git commit -m "初始化项目：网页文章保存工具"
 
-# 5. 在 GitHub 创建仓库后，连接并推送
-git remote add origin git@github.com:你的用户名/article-saver.git
+# 5. 在 GitHub 创建仓库（网页操作）
+
+# 6. 连接远程仓库（推荐用 HTTPS，更简单）
+git remote add origin https://github.com/你的用户名/仓库名.git
+
+# 7. 首次推送
+# 如果 GitHub 仓库是空的：
+git push -u origin main
+
+# 如果 GitHub 仓库有 README（常见情况）：
+git pull origin main --allow-unrelated-histories
 git push -u origin main
 ```
 
@@ -397,6 +452,64 @@ git push
 ---
 
 ## 常见问题
+
+### Q: 推送时提示 "Permission denied (publickey)"？
+**原因**：使用 SSH 地址但没有配置 SSH 密钥。
+
+**解决方案一（推荐）**：改用 HTTPS
+```bash
+# 删除 SSH 远程地址
+git remote remove origin
+
+# 使用 HTTPS 地址
+git remote add origin https://github.com/用户名/仓库名.git
+
+# 推送（会弹出登录窗口）
+git push -u origin main
+```
+
+**解决方案二**：配置 SSH 密钥
+```bash
+# 1. 生成密钥
+ssh-keygen -t ed25519 -C "你的邮箱"
+
+# 2. 查看并复制公钥
+cat ~/.ssh/id_ed25519.pub
+
+# 3. 添加到 GitHub：Settings → SSH and GPG keys → New SSH key
+
+# 4. 测试连接
+ssh -T git@github.com
+```
+
+### Q: 推送时提示 "! [rejected] ... remote contains work"？
+**原因**：GitHub 仓库有内容（如 README），但你本地没有，两个仓库历史不同。
+
+**解决方案**：先拉取合并，再推送
+```bash
+# 拉取并合并（允许不相关的历史）
+git pull origin main --allow-unrelated-histories
+
+# 如果弹出编辑器，保存退出即可
+
+# 再次推送
+git push -u origin main
+```
+
+**或者强制推送（会覆盖远程内容，慎用）**：
+```bash
+git push -u origin main --force
+```
+
+### Q: 切换分支时提示 "pathspec 'main' did not match any file(s)"？
+**原因**：还没有任何提交，分支不存在。
+
+**解决方案**：先提交一次
+```bash
+git add .
+git commit -m "初始提交"
+git checkout main  # 现在可以了
+```
 
 ### Q: 如何撤销最后一次提交？
 ```bash
