@@ -321,7 +321,11 @@ git push origin feature-new
 | 添加所有 | `git add .` |
 | 提交 | `git commit -m "message"` |
 | 查看历史 | `git log --oneline` |
+| 查看最近N次 | `git log --oneline -5` |
 | 查看差异 | `git diff` |
+| 查看文件差异 | `git diff <file>` |
+| 查看修改统计 | `git diff --stat` |
+| 查看提交详情 | `git show` |
 | 创建分支 | `git checkout -b <branch>` |
 | 切换分支 | `git checkout <branch>` |
 | 合并分支 | `git merge <branch>` |
@@ -447,6 +451,42 @@ git commit -m "fix: 修复 EPUB 转换问题"
 
 # 4. 推送
 git push
+```
+
+### 查看文件变化和版本
+```bash
+# 查看哪些文件有修改
+git status
+
+# 查看所有修改的具体内容
+git diff
+
+# 查看指定文件的修改
+git diff 文件名
+
+# 只显示修改统计（行数）
+git diff --stat
+
+# 查看提交历史（简洁模式）
+git log --oneline
+
+# 查看最近5次提交
+git log --oneline -5
+
+# 查看最新提交的详情
+git show
+
+# 查看指定提交的详情
+git show 提交ID
+
+# 图形化显示分支历史
+git log --oneline --graph --all
+```
+
+### 快捷提交（已跟踪文件）
+```bash
+# 一行完成添加、提交、推送（仅限已跟踪的文件）
+git commit -am "fix: 修复问题" && git push
 ```
 
 ---
